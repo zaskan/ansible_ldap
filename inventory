@@ -1,0 +1,7 @@
+# Tested with Debian 11 Ldap
+#
+# Add ldap servers to install here. You can Add multiple lines
+[all]
+SERVERNAME.example.com ansible_host=IPADDRESS ansible_user=root
+
+

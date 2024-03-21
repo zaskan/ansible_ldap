@@ -1,0 +1,83 @@
+---
+- name: Deploy a minimal LDAP server for testing in Debian 11
+  hosts: all
+  tasks:
+
+    - name: Set hostname
+      ansible.builtin.hostname:
+         name: "{{ inventory_hostname }}"
+
+    - name: Add entry to hosts file
+      ansible.builtin.lineinfile:
+        line: "{{ ansible_host }} {{ inventory_hostname }}"
+        path: /etc/hosts
+
+    - name: Install Packages
+      ansible.builtin.apt: 
+        pkg:
+          - slapd 
+          - ldap-utils
+          - pip
+          - python3-dev
+          - libldap2-dev
+          - libsasl2-dev
+          - tox
+          - lcov
+          - valgrind
+          - python3-ldap
+        state: present
+        update_cache: yes 
+
+    - name: Create hash for the new secret
+      command: "slappasswd -s {{ new_ldap_password }}"
+      register: ldap_password
+
+    - name: Template config ldif
+      ansible.builtin.template:
+        src: templates/mod_config.ldif.j2
+        dest: mod_config.ldif
+
+    - name: Template mdb ldif
+      ansible.builtin.template:
+        src: templates/mod_mdb.ldif.j2
+        dest: mod_mdb.ldif
+
+    - name: Set Admin Password
+      ansible.builtin.command: "ldapmodify -Y EXTERNAL -H ldapi:/// -f {{ item }}"
+      loop:
+        - mod_config.ldif
+        - mod_mdb.ldif
+
+    - name: Clean ldif files
+      ansible.builtin.file: 
+        path: "{{ item }}"
+        state: absent
+      loop:
+        - mod_config.ldif
+        - mod_mdb.ldif
+
+    - name: Make sure we have a parent entry for users
+      community.general.ldap_entry:
+        dn: ou=users,dc=example,dc=com
+        objectClass: organizationalUnit
+        bind_dn: cn=admin,dc=example,dc=com
+        bind_pw: "{{ new_ldap_password }}"
+
+    - name: Add test user (Short hostname and same password)
+      community.general.ldap_entry:
+        dn: "cn={{ ansible_nodename | split ('.') | first }},ou=users,dc=example,dc=com"
+        objectClass: 
+          - inetOrgPerson
+          - posixAccount
+          - top
+        attributes:
+          homedirectory: "{{ ansible_nodename | split ('.') | first }}"
+          givenname: "{{ ansible_nodename | split ('.') | first }}"
+          sn: "{{ ansible_nodename | split ('.') | first }}"
+          uid: "{{ ansible_nodename | split ('.') | first }}"
+          uidnumber: 10000
+          gidnumber: 10000
+          userPassword: "{{ ansible_nodename | split ('.') | first }}"
+        bind_dn: cn=admin,dc=example,dc=com
+        bind_pw: "{{ new_ldap_password }}"
+
