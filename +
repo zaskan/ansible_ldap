@@ -1,0 +1,18 @@
+---
+- name: Configure LDAP servers in the ansible controller
+  hosts: all
+  vars: 
+    ldap_settings: "{{ lookup('ansible.builtin.template', 'templates/controller_ldap.settings.yaml.j2') }}"
+  tasks:
+
+    - name: Set all the LDAP Auth Bind Params
+      ansible.controller.settings:
+        controller_host: 192.168.124.187
+        controller_username: admin
+        controller_password: password
+        validate_certs: false
+        settings: "{{ lookup('ansible.builtin.template', 'templates/controller_ldap.settings.yaml.j2').splitlines()|dict }}"
+      loop: "{{ groups['all'] }}"
+      loop_control:
+        index_var: idx
+      delegate_to: localhost

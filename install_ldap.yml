@@ -58,14 +58,14 @@
 
     - name: Make sure we have a parent entry for users
       community.general.ldap_entry:
-        dn: ou=users,dc=example,dc=com
+        dn: "ou=users,dc={{ inventory_hostname.split('.')[1] }},dc={{ inventory_hostname.split('.')[2] }}"
         objectClass: organizationalUnit
-        bind_dn: cn=admin,dc=example,dc=com
+        bind_dn: "cn=admin,dc={{ inventory_hostname.split('.')[1] }},dc={{ inventory_hostname.split('.')[2] }}"
         bind_pw: "{{ new_ldap_password }}"
 
     - name: Add test user (Short hostname and same password)
       community.general.ldap_entry:
-        dn: "cn={{ ansible_nodename | split ('.') | first }},ou=users,dc=example,dc=com"
+        dn: "cn={{ ansible_nodename | split ('.') | first }},ou=users,dc={{ inventory_hostname.split('.')[1] }},dc={{ inventory_hostname.split('.')[2] }}"
         objectClass: 
           - inetOrgPerson
           - posixAccount
@@ -78,6 +78,6 @@
           uidnumber: 10000
           gidnumber: 10000
           userPassword: "{{ ansible_nodename | split ('.') | first }}"
-        bind_dn: cn=admin,dc=example,dc=com
+        bind_dn: "cn=admin,dc={{ inventory_hostname.split('.')[1] }},dc={{ inventory_hostname.split('.')[2] }}"
         bind_pw: "{{ new_ldap_password }}"
 
