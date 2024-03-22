@@ -11,6 +11,4 @@
         validate_certs: false
         settings: "{{ lookup('ansible.builtin.template', 'templates/controller_ldap.settings.json.j2') | from_json }}"
       loop: "{{ groups['all'] }}"
-      loop_control:
-        index_var: idx
       delegate_to: localhost
