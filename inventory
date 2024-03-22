@@ -2,8 +2,8 @@
 #
 # Add ldap servers to install here. You can Add multiple lines
 [all]
-ldap01.first.com ansible_host=192.168.124.155 ansible_user=root
-ldap02.second.com ansible_host=192.168.124.128 ansible_user=root
-ldap03.third.com ansible_host=192.168.124.60 ansible_user=root
+ldap01.first.com ansible_host=192.168.124.X ansible_user=root
+ldap02.second.com ansible_host=192.168.124.X ansible_user=root
+ldap03.third.com ansible_host=192.168.124.X ansible_user=root
 
 
