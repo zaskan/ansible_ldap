@@ -1,0 +1,42 @@
+---
+- name: Deploy servers using Kcli
+  hosts: all
+  serial: 1
+  strategy: linear
+  gather_facts: false
+  tasks:
+
+    - name: Download debian11 image
+      ansible.builtin.command:
+        cmd: kcli download image debian11
+      delegate_to: localhost
+      register: download_image
+      changed_when: download_image.rc == 0
+
+    - name: Create virtual machines
+      karmab.kcli.kcli_vm:
+        name: "{{ item }}"
+        state: present
+        image: debian11
+        parameters:
+          memory: 1024
+          yamlinventory: true
+      delegate_to: localhost
+      register: result
+      loop: "{{ groups['all'] }}"
+      when: inventory_hostname == item
+
+    - name: Get machine info
+      ansible.builtin.command:
+        cmd: "klist.py --host {{ inventory_hostname }}"
+      delegate_to: localhost
+      register: host_info
+      changed_when: download_image.rc == 0
+      until: host_info.stdout | from_json | community.general.json_query('ansible_host') != None
+
+    - name: Add Ansible Host to Inventory file
+      ansible.builtin.lineinfile:
+        path: inventory
+        regexp: "^{{ inventory_hostname }}"
+        line: "{{ inventory_hostname }} ansible_host={{ host_info.stdout | from_json | community.general.json_query('ansible_host') }} ansible_user=root"
+      delegate_to: localhost

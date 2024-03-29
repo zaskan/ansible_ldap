@@ -1,6 +1,6 @@
  {"AUTH_LDAP_{{ inventory_hostname | regex_search('([1-9]+)') }}_SERVER_URI": "ldap://{{ ansible_host }}:389",
   "AUTH_LDAP_{{ inventory_hostname | regex_search('([1-9]+)') }}_BIND_DN": "cn=admin,dc={{ inventory_hostname.split('.')[1] }},dc={{ inventory_hostname.split('.')[2] }}",
-  "AUTH_LDAP_{{ inventory_hostname | regex_search('([1-9]+)') }}_BIND_PASSWORD": "{{ new_ldap_password }}",
+  "AUTH_LDAP_{{ inventory_hostname | regex_search('([1-9]+)') }}_BIND_PASSWORD": "{{ ldap_password }}",
   "AUTH_LDAP_{{ inventory_hostname | regex_search('([1-9]+)') }}_START_TLS": "false",
   "AUTH_LDAP_{{ inventory_hostname | regex_search('([1-9]+)') }}_USER_SEARCH": ["OU=users,dc={{ inventory_hostname.split('.')[1] }},dc={{ inventory_hostname.split('.')[2] }}","SCOPE_SUBTREE","(uid=%(user)s)"],
   "AUTH_LDAP_{{ inventory_hostname | regex_search('([1-9]+)') }}_GROUP_SEARCH": ["dc={{ inventory_hostname.split('.')[1] }},dc={{ inventory_hostname.split('.')[2] }}","SCOPE_SUBTREE","(objectClass=group)"],

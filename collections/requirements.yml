@@ -1,0 +1,5 @@
+collections:
+  - name: https://github.com/zaskan/ansible-kcli-modules.git
+    type: git
+
+  - name: community.general

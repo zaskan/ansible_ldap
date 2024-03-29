@@ -5,7 +5,7 @@
 
     - name: Set hostname
       ansible.builtin.hostname:
-         name: "{{ inventory_hostname }}"
+        name: "{{ inventory_hostname }}"
 
     - name: Add entry to hosts file
       ansible.builtin.lineinfile:
@@ -13,9 +13,9 @@
         path: /etc/hosts
 
     - name: Install Packages
-      ansible.builtin.apt: 
+      ansible.builtin.apt:
         pkg:
-          - slapd 
+          - slapd
           - ldap-utils
           - pip
           - python3-dev
@@ -26,30 +26,36 @@
           - valgrind
           - python3-ldap
         state: present
-        update_cache: yes 
+        update_cache: true
 
     - name: Create hash for the new secret
-      command: "slappasswd -s {{ new_ldap_password }}"
+      ansible.builtin.command:
+        cmd: "slappasswd -s {{ new_ldap_password }}"
       register: ldap_password
+      changed_when: ldap_password.rc == 0
 
     - name: Template config ldif
       ansible.builtin.template:
         src: templates/mod_config.ldif.j2
         dest: mod_config.ldif
+        mode: '0644'
 
     - name: Template mdb ldif
       ansible.builtin.template:
         src: templates/mod_mdb.ldif.j2
         dest: mod_mdb.ldif
+        mode: '0644'
 
     - name: Set Admin Password
       ansible.builtin.command: "ldapmodify -Y EXTERNAL -H ldapi:/// -f {{ item }}"
       loop:
         - mod_config.ldif
         - mod_mdb.ldif
+      register: admin_password
+      changed_when: admin_password.rc == 0
 
     - name: Clean ldif files
-      ansible.builtin.file: 
+      ansible.builtin.file:
         path: "{{ item }}"
         state: absent
       loop:
@@ -65,19 +71,18 @@
 
     - name: Add test user (Short hostname and same password)
       community.general.ldap_entry:
-        dn: "cn={{ ansible_nodename | split ('.') | first }},ou=users,dc={{ inventory_hostname.split('.')[1] }},dc={{ inventory_hostname.split('.')[2] }}"
-        objectClass: 
+        dn: "cn={{ ansible_nodename | split('.') | first }},ou=users,dc={{ inventory_hostname.split('.')[1] }},dc={{ inventory_hostname.split('.')[2] }}"
+        objectClass:
           - inetOrgPerson
           - posixAccount
           - top
         attributes:
-          homedirectory: "{{ ansible_nodename | split ('.') | first }}"
-          givenname: "{{ ansible_nodename | split ('.') | first }}"
-          sn: "{{ ansible_nodename | split ('.') | first }}"
-          uid: "{{ ansible_nodename | split ('.') | first }}"
+          homedirectory: "{{ ansible_nodename | split('.') | first }}"
+          givenname: "{{ ansible_nodename | split('.') | first }}"
+          sn: "{{ ansible_nodename | split('.') | first }}"
+          uid: "{{ ansible_nodename | split('.') | first }}"
           uidnumber: 10000
           gidnumber: 10000
-          userPassword: "{{ ansible_nodename | split ('.') | first }}"
+          userPassword: "{{ ansible_nodename | split('.') | first }}"
         bind_dn: "cn=admin,dc={{ inventory_hostname.split('.')[1] }},dc={{ inventory_hostname.split('.')[2] }}"
         bind_pw: "{{ new_ldap_password }}"
-

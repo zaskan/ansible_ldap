@@ -3,13 +3,32 @@
 ### Requirements
 - Set **new_ldap_password** via extra_vars
 - A Debian 11 ldap server
+- (Optional) kcli
+- (Optional) An Ansible or AWX controller
 ### Instructions
+
+Optionally, you can provision the servers via [kcli](https://kcli.readthedocs.io/en/latest/). In that case, you need to have kcli installed in your host machine.
+The command below will try to provision the vms in the host.
+
+~~~
+ansible-playbook -i inventory kcli_deploy_infra.yml
+~~~
+
+Once you have the servers provisioned, follow the steps below to configure ldap on them.
+
 - Add your ldap servers to the inventory file. Tested only in Debian 11 Servers.
 - Execute the playbook, adding your ldap admin password via extra vars
+
 ~~~
 ansible-playbook -i inventory install_ldap.yml -e new_ldap_password=YOUR_ADMIN_PASSWORD
 ~~~
 
 If you want to add your ldap servers to an Ansible Controller, add your credentials in the `configure_controller.yaml` playbook and execute it in the same way.
+
 In this case the server list should contain an ordinal number matching with the ldap server order number in settings/ldap
- 
+
+If you want to configure your Ansible Controller or Awx to use these servers for authentication, add the credentials to `configure_controller.yml` and execute:
+
+~~~
+ansible-playbook -i inventory configure_controller.yml-e ldap_password=YOUR_ADMIN_PASSWORD
+~~~
