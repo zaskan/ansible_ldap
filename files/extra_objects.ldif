@@ -1,0 +1,28 @@
+dn: cn=groups,dc=example,dc=com
+objectClass: posixGroup
+objectClass: top
+gidNumber: 678
+cn: groups
+
+dn: cn=developers,cn=groups,dc=example,dc=com
+objectClass: posixGroup
+objectClass: top
+gidNumber: 679
+cn: developers
+
+dn: uid=rafa,cn=developers,cn=groups,dc=example,dc=com
+objectClass: top
+objectClass: account
+objectClass: posixAccount
+objectClass: shadowAccount
+cn: rafa
+uid: rafa
+uidNumber: 16859
+gidNumber: 100
+homeDirectory: /home/rafa
+loginShell: /bin/bash
+gecos: rafa
+userPassword: password
+shadowLastChange: 0
+shadowMax: 0
+shadowWarning: 0

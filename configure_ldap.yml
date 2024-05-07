@@ -1,0 +1,14 @@
+---
+- name: Deploy a minimal LDAP server for testing in Debian 11
+  hosts: all
+    
+  tasks:
+
+    - name: Copy config files
+      ansible.builtin.copy:
+        src: extra_objects.ldif
+        dest: /tmp/extra_objects.ldif
+        mode: '0644'
+
+    - name: Create Objects
+      ansible.builtin.shell: "ldapadd -x -H ldap://127.0.0.1 -D \"cn=admin,dc=example,dc=com\" -f /tmp/extra_objects.ldif -w {{ ldap_password }}"
