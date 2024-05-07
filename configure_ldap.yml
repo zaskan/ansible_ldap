@@ -1,6 +1,8 @@
 ---
 - name: Deploy a minimal LDAP server for testing in Debian 11
   hosts: all
+  vars:
+    uid: 16860
     
   tasks:
 
@@ -10,5 +12,31 @@
         dest: /tmp/extra_objects.ldif
         mode: '0644'
 
-    - name: Create Objects
+    - name: Create Objects from plain test file
       ansible.builtin.shell: "ldapadd -x -H ldap://127.0.0.1 -D \"cn=admin,dc=example,dc=com\" -f /tmp/extra_objects.ldif -w {{ ldap_password }}"
+
+    - name: Include Vars
+      ansible.builtin.include_vars: users.yml
+
+    - name: Create objects from vars file
+      community.general.ldap_entry:
+        dn: "{{ item.dn }}"
+        objectClass:
+          - posixAccount
+          - shadowAccount 
+          - top
+          - account
+        attributes:
+          homedirectory: "{{ item.home }}"
+          cn: "{{ item.username }}"
+          uid: "{{ item.username }}"
+          uidnumber: "{{ control | int + uid | int }}"
+          gidnumber: "{{ item.gidNumber }}"
+          userPassword: "{{ item.username }}"
+        bind_dn: "cn=admin,dc=example,dc=com"
+        bind_pw: "{{ ldap_password }}"
+      loop: "{{ users }}"
+      loop_control: 
+        label: "{{ item.username }}"
+        index_var: control
+   
